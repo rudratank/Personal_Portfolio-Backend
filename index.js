@@ -53,6 +53,8 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
+app.set('trust proxy', true);
+
 app.use('/uploads', express.static(path.join(__dirname, './uploads')));
 
 // Separate rate limiters for different routes
