@@ -132,13 +132,12 @@ export const verifyOTP = async (req, res) => {
       admin.lastSuccessfulLogin = Date.now();
       await admin.save();
   
-      res.cookie("token", token, {
-        httpOnly: true,
-        maxAge,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        path: '/'
-      });
+     res.cookie('token', token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'None',
+});
+
   
       return res.status(200).json({
         message: "Login successful",
