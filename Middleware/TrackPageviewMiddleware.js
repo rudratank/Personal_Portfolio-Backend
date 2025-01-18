@@ -1,6 +1,6 @@
 // TrackPageviewMiddleware.js
 import Statistics from "../Models/TrackingModel.js";
-import { isAdminPath } from '../Utils/PathUtils.js';
+import { isAdminPath } from '../utils/PathUtils.js';
 import {UAParser} from 'ua-parser-js';
 import geoip from 'geoip-lite';
 import Views from "../Models/ViewsModel.js";

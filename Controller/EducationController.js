@@ -1,4 +1,3 @@
-import { catchAsync } from "../Middleware/CatchAsync.js";
 import Education from "../Models/EducationModel.js";
 import mongoose from 'mongoose';
 export const getAllEducation = async (req, res, next) => {
