@@ -8,7 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs';
-import { cacheMiddleware } from '../../Middleware/caching.js';
+
 
 const HOME_CACHE_KEY = 'home_data';
 const ABOUT_CACHE_KEY = 'about_data';

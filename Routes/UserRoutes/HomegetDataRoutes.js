@@ -1,6 +1,7 @@
 import express from 'express';
 import {getAllProjects, getProjectById, getResume, getUserAboutData, getUserEducation, getuserHomeData, getUserSkills} from '../../Controller/UserController/UserHomeController.js'
 import Project from '../../Models/ProjectModels.js';
+import { cacheMiddleware } from '../../Middleware/caching.js';
 const router = express.Router();
 
 router.get('/userhome-data', cacheMiddleware(HOME_CACHE_KEY), getuserHomeData);
