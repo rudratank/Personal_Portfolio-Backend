@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
-
+import compression from 'compression';
 // Import routes
 import connection from './utils/DbConnection.js';
 import Adminauth from './Routes/AdminAuthRoutes.js';
@@ -30,6 +30,7 @@ import { globalErrorHandler } from './utils/errorHandler.js';
 // Configuration
 
 const app = express();
+app.use(compression());
 const port = process.env.PORT || 3005;
 const databaseurl = process.env.DATABASE_URL;
 

@@ -8,22 +8,32 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs';
+import { cacheMiddleware } from '../../Middleware/caching.js';
 
-export const getuserHomeData=async(req,res)=>{
-    try{
-    const homeData = await Home.findOne().sort({ createdAt: -1 });
-    
-    if (!homeData) {
-      return res.status(404).json({ message: 'No home data found' });
+const HOME_CACHE_KEY = 'home_data';
+const ABOUT_CACHE_KEY = 'about_data';
+const SKILLS_CACHE_KEY = 'skills_data';
+const EDUCATION_CACHE_KEY = 'education_data';
+const PROJECTS_CACHE_KEY = 'projects_data';
+
+export const getuserHomeData = async (req, res) => {
+    try {
+      // Use lean() for better performance when you don't need Mongoose documents
+      const homeData = await Home.findOne()
+        .sort({ createdAt: -1 })
+        .select('-__v') // Exclude version key
+        .lean();
+      
+      if (!homeData) {
+        return res.status(404).json({ message: 'No home data found' });
+      }
+  
+      res.sendAndCache(homeData);
+    } catch (error) {
+      console.error('Error fetching home data:', error);
+      res.status(500).json({ message: 'Error fetching home data' });
     }
-
-    res.status(200).json(homeData);
-
-  } catch (error) {
-    console.error('Error fetching home data:', error);
-    res.status(500).json({ message: 'Error fetching home data' });
-  }
-}
+  };
 
 
 // Controller/UserController/UserAboutController.js
@@ -54,76 +64,85 @@ export const getUserAboutData = async (req, res) => {
 
 export const getUserSkills = async (req, res) => {
     try {
-        // Fetch all skills and sort them by category
-        const skills = await Skils.find({}).sort({ category: 1, name: 1 });
-        
-        // Group skills by category
-        const groupedSkills = {
-            frontend: skills.filter(skill => skill.category === 'frontend'),
-            backend: skills.filter(skill => skill.category === 'backend')
-        };
-        
-
-        if (!skills.length) {
-            return res.status(404).json({
-                success: false,
-                message: 'No skills found'
-            });
+      // Use projection to select only needed fields
+      const skills = await Skils.find({}, 'category name proficiency')
+        .lean()
+        .sort({ category: 1, name: 1 });
+  
+      // Use reduce instead of filter for better performance
+      const groupedSkills = skills.reduce((acc, skill) => {
+        const category = skill.category || 'other';
+        if (!acc[category]) {
+          acc[category] = [];
         }
-
-        res.status(200).json({
-            success: true,
-            data: groupedSkills
+        acc[category].push(skill);
+        return acc;
+      }, {});
+  
+      if (!skills.length) {
+        return res.status(404).json({
+          success: false,
+          message: 'No skills found'
         });
+      }
+  
+      res.sendAndCache({
+        success: true,
+        data: groupedSkills
+      });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching skills data',
-            error: error.message
-        });
+      res.status(500).json({
+        success: false,
+        message: 'Error fetching skills data',
+        error: error.message
+      });
     }
-};
+  };
 
-export const getUserEducation = async (req, res) => {
+  export const getUserEducation = async (req, res) => {
     try {
-        // Fetch education data
-        const educationData = await Education.find()
-            .sort({ 'period': -1 }) // Sort by period in descending order
-            .lean(); // Convert mongoose documents to plain JavaScript objects
-
-        // Fetch certificates
-        const certificateData = await Certificate.find()
-            .sort({ 'date': -1 }) // Sort by date in descending order
-            .lean(); // Convert mongoose documents to plain JavaScript objects
-
-        // Transform certificate data to match frontend structure
-        const transformedCertificates = certificateData.map(cert => ({
-            id: cert._id.toString(),
-            title: cert.title,
-            platform: cert.platform,
-            imageUrl: cert.image,
-            date: cert.date, // We'll use the original date format
-            credentialId: cert.credentialId || null,
-            credentialUrl: cert.credentialUrl || null,
-            skills: cert.skills || []
-        }));
-
-        res.status(200).json({
-            success: true,
-            data: {
-                education: educationData,
-                certificates: transformedCertificates
-            }
-        });
+      // Use Promise.all for parallel execution
+      const [educationData, certificateData] = await Promise.all([
+        Education.find()
+          .select('-__v')
+          .sort({ 'period': -1 })
+          .lean(),
+        Certificate.find()
+          .select('-__v')
+          .sort({ 'date': -1 })
+          .lean()
+      ]);
+  
+      const transformedCertificates = certificateData.map(({ 
+        _id, title, platform, image, date, credentialId, credentialUrl, skills 
+      }) => ({
+        id: _id.toString(),
+        title,
+        platform,
+        imageUrl: image,
+        date,
+        credentialId: credentialId || null,
+        credentialUrl: credentialUrl || null,
+        skills: skills || []
+      }));
+  
+      res.sendAndCache({
+        success: true,
+        data: {
+          education: educationData,
+          certificates: transformedCertificates
+        }
+      });
     } catch (error) {
-        console.error('Error in getUserEducation:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching education data',
-            error: error.message
-        });
+      console.error('Error in getUserEducation:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error fetching education data',
+        error: error.message
+      });
     }
-};
+  };
+  
 
 export const getAllProjects = async (req, res) => {
     try {
