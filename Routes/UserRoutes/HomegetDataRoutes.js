@@ -14,6 +14,7 @@ router.get('/userhome-data', cacheMiddleware(HOME_CACHE_KEY), getuserHomeData);
 router.get('/userabout-data', cacheMiddleware(ABOUT_CACHE_KEY), getUserAboutData);
 router.get('/userskills-data', cacheMiddleware(SKILLS_CACHE_KEY), getUserSkills);
 router.get('/usereducation-data', cacheMiddleware(EDUCATION_CACHE_KEY), getUserEducation);
+router.get('/resume',getResume)
 router.get('/projects', cacheMiddleware(PROJECTS_CACHE_KEY), getAllProjects);
 router.get('/projects/:id', async (req, res) => {
   const cacheKey = `project_${req.params.id}`;
@@ -32,5 +33,8 @@ router.get('/projects/:id', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+export default router;
+
 
 export default router;
