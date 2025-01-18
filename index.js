@@ -10,7 +10,7 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
 // Import routes
-import connection from './Utils/DbConnection.js';
+import connection from './utils/DbConnection.js';
 import Adminauth from './Routes/AdminAuthRoutes.js';
 import UpdateData from './Routes/HomeRoutes.js';
 import aboutRoutes from './Routes/AboutRoutes.js';
@@ -21,11 +21,11 @@ import certificateRoutes from './Routes/certificateRoutes.js';
 import messageRoutes from './Routes/MessageRoutes.js';
 import dashboardRoutes from './Routes/DashboardRoutes.js';
 import userDataRoutes from './Routes/UserRoutes/HomegetDataRoutes.js';
-import { globalErrorHandler } from './utils/errorHandler.js';
 import { sessionMiddleware } from './Middleware/SessionMiddleware.js';
 import { trackPageView } from './Middleware/TrackPageviewMiddleware.js';
 import uploadRoutes from './Routes/UserRoutes/UploadRoutes.js';
 import adminViewsRoutes from './Routes/AdminViews.js'
+import { globalErrorHandler } from './utils/errorHandler.js';
 
 // Configuration
 
