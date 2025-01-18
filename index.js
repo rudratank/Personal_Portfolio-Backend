@@ -39,7 +39,7 @@ const __dirname = dirname(__filename);
 
 // Middleware
 app.use(cors({
-  origin: ['https://rudracodes.netlify.app', 'http://rudracodes.netlify.app', 'https://portfolio-backend-93su.onrender.com'],
+  origin: ['https://rudracodes.netlify.app', 'http://rudracodes.netlify.app', 'https://portfolio-backend-93su.onrender.com','http://localhost:5173/'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true,
   allowedHeaders: ['Content-Type', "Authorization"],
@@ -69,7 +69,7 @@ const portfolioLimiter = rateLimit({
 });
 
 // Apply stricter rate limiting only to admin routes
-app.use('/api/auth', adminLimiter);
+app.use('/api/auth');
 app.use('/api/home', adminLimiter);
 app.use('/api/about', adminLimiter);
 app.use('/api/education', adminLimiter);
