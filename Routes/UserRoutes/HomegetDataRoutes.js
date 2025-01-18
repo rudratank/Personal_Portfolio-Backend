@@ -4,6 +4,12 @@ import Project from '../../Models/ProjectModels.js';
 import { cacheMiddleware } from '../../Middleware/caching.js';
 const router = express.Router();
 
+const HOME_CACHE_KEY = 'home_data';
+const ABOUT_CACHE_KEY = 'about_data';
+const SKILLS_CACHE_KEY = 'skills_data';
+const EDUCATION_CACHE_KEY = 'education_data';
+const PROJECTS_CACHE_KEY = 'projects_data';
+
 router.get('/userhome-data', cacheMiddleware(HOME_CACHE_KEY), getuserHomeData);
 router.get('/userabout-data', cacheMiddleware(ABOUT_CACHE_KEY), getUserAboutData);
 router.get('/userskills-data', cacheMiddleware(SKILLS_CACHE_KEY), getUserSkills);

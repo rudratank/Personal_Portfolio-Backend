@@ -10,11 +10,7 @@ import { dirname } from 'path';
 import fs from 'fs';
 
 
-const HOME_CACHE_KEY = 'home_data';
-const ABOUT_CACHE_KEY = 'about_data';
-const SKILLS_CACHE_KEY = 'skills_data';
-const EDUCATION_CACHE_KEY = 'education_data';
-const PROJECTS_CACHE_KEY = 'projects_data';
+
 
 export const getuserHomeData = async (req, res) => {
     try {
