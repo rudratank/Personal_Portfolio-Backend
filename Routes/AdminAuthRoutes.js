@@ -15,7 +15,7 @@ const authLimiter = rateLimit({
 });
 
 // Public routes
-router.post('/admin-auth', authLimiter, validateLoginRequest, logActivity, login);
+router.post('/admin-auth', validateLoginRequest, logActivity, login);
 router.post('/admin-auth/verify-otp', authLimiter, logActivity, verifyOTP);
 router.post('/admin-auth/unlock-account', authLimiter, logActivity, unlockAccount);
 
