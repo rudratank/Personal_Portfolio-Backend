@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
-import compression from 'compression';
+
 // Import routes
 import connection from './utils/DbConnection.js';
 import Adminauth from './Routes/AdminAuthRoutes.js';
@@ -30,7 +30,6 @@ import { globalErrorHandler } from './utils/errorHandler.js';
 // Configuration
 
 const app = express();
-app.use(compression());
 const port = process.env.PORT || 3005;
 const databaseurl = process.env.DATABASE_URL;
 
@@ -54,8 +53,6 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-app.set('trust proxy', true);
-
 app.use('/uploads', express.static(path.join(__dirname, './uploads')));
 
 // Separate rate limiters for different routes
@@ -72,6 +69,7 @@ const portfolioLimiter = rateLimit({
 });
 
 // Apply stricter rate limiting only to admin routes
+app.use('/api/auth');
 app.use('/api/home', adminLimiter);
 app.use('/api/about', adminLimiter);
 app.use('/api/education', adminLimiter);
