@@ -69,7 +69,6 @@ const portfolioLimiter = rateLimit({
 });
 
 // Apply stricter rate limiting only to admin routes
-app.use('/api/auth');
 app.use('/api/home', adminLimiter);
 app.use('/api/about', adminLimiter);
 app.use('/api/education', adminLimiter);
