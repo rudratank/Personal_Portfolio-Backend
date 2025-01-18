@@ -39,7 +39,7 @@ const __dirname = dirname(__filename);
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'rudracodes.netlify.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true,
   allowedHeaders: ['Content-Type', "Authorization"],
