@@ -10,7 +10,7 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
 // Import routes
-import connection from './Utils/DbConnection.js';
+import connection from './utils/DbConnection.js';
 import Adminauth from './Routes/AdminAuthRoutes.js';
 import UpdateData from './Routes/HomeRoutes.js';
 import aboutRoutes from './Routes/AboutRoutes.js';
