@@ -59,7 +59,7 @@ app.use(helmet({
   crossOriginEmbedderPolicy: { policy: "unsafe-none" }
 }));
 
-app.use('/uploads', express.static(path.join(__dirname, './uploads'), {
+app.use('./uploads', express.static(path.join(__dirname, './uploads'), {
   setHeaders: (res, path) => {
     // Set cache control headers
     res.set('Cache-Control', 'no-cache');
