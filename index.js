@@ -39,7 +39,7 @@ const __dirname = dirname(__filename);
 
 // Middleware
 app.use(cors({
-  origin: ['https://rudracodes.netlify.app', 'http://rudracodes.netlify.app', 'https://portfolio-backend-93su.onrender.com','http://localhost:5173/'],
+  origin: ['http://rudracodes.netlify.app' ,'https://rudracodes.netlify.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true,
   allowedHeaders: ['Content-Type', "Authorization"],
