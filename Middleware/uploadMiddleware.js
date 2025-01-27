@@ -41,14 +41,15 @@ const upload = multer({
 
 // Save file to disk with WebP conversion for images
 const saveFile = async (buffer, originalname, fieldname) => {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+    const timestamp = Date.now();
+    const uniqueSuffix = `${timestamp}-${Math.round(Math.random() * 1E9)}`;
     
     if (fieldname === 'image') {
-        // Convert image to WebP with optimization
         const webpBuffer = await sharp(buffer)
-            .webp({ quality: 80, nearLossless: true }) // Balanced quality and size
+            .webp({ quality: 80, nearLossless: true })
             .toBuffer();
         
+        // Include timestamp in filename
         const filename = `${fieldname}-${uniqueSuffix}.webp`;
         const uploadDir = path.join(process.cwd(), 'uploads', 'images');
         
@@ -57,6 +58,7 @@ const saveFile = async (buffer, originalname, fieldname) => {
         const filepath = path.join(uploadDir, filename);
         await fs.promises.writeFile(filepath, webpBuffer);
         
+        // Return URL with timestamp
         return `/uploads/images/${filename}`;
     } else if (fieldname === 'resume') {
         const extension = path.extname(originalname);
