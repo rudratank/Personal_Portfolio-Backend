@@ -26,6 +26,7 @@ import { trackPageView } from './Middleware/TrackPageviewMiddleware.js';
 import uploadRoutes from './Routes/UserRoutes/UploadRoutes.js';
 import adminViewsRoutes from './Routes/AdminViews.js'
 import { globalErrorHandler } from './utils/errorHandler.js';
+import cacheMiddleware from './Middleware/catchMiddleware.js'
 
 // Configuration
 
@@ -45,16 +46,22 @@ app.use(cors({
   allowedHeaders: ['Content-Type', "Authorization"],
   exposedHeaders: ['Content-Disposition']
 }));
+app.use(cacheMiddleware);
 app.use(cookieParser());
 app.use(express.json({ limit: '10kb' }));
 app.use(sessionMiddleware);
 app.use(trackPageView);
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" }, // Already in your code
+  crossOriginOpenerPolicy: { policy: "unsafe-none" },
+  crossOriginEmbedderPolicy: { policy: "unsafe-none" }
 }));
 
-app.use('/uploads', express.static(path.join(__dirname, './uploads')));
-
+app.use('/uploads', express.static(path.join(__dirname, './uploads'), {
+  setHeaders: (res, path) => {
+    res.set('Cache-Control', 'public, max-age=86400'); // 1 day cache
+  }
+}));
 // Separate rate limiters for different routes
 const adminLimiter = rateLimit({
   max: 100,
