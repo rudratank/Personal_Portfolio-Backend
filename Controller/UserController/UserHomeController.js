@@ -9,21 +9,25 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs';
 
-export const getuserHomeData=async(req,res)=>{
-    try{
-    const homeData = await Home.findOne().sort({ createdAt: -1 });
-    
-    if (!homeData) {
-      return res.status(404).json({ message: 'No home data found' });
+export const getuserHomeData = async (req, res) => {
+    try {
+      const homeData = await Home.findOne()
+        .select('name title description image socialLinks')
+        .lean()
+        .sort({ createdAt: -1 });
+      
+      if (!homeData) {
+        return res.status(404).json({ message: 'No home data found' });
+      }
+  
+      res.status(200).json(homeData);
+    } catch (error) {
+      res.status(500).json({ 
+        message: 'Error fetching home data',
+        error: error.message 
+      });
     }
-
-    res.status(200).json(homeData);
-
-  } catch (error) {
-    console.error('Error fetching home data:', error);
-    res.status(500).json({ message: 'Error fetching home data' });
-  }
-}
+  };
 
 
 // Controller/UserController/UserAboutController.js
@@ -148,7 +152,6 @@ export const getProjectById = async (req, res) => {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
 export const getResume = async (req, res) => {
     try {
         const about = await About.findOne({}, 'resume');
@@ -156,29 +159,31 @@ export const getResume = async (req, res) => {
             return res.status(404).json({ message: 'Resume not found' });
         }
 
-        // Remove the leading slash if present
         const relativePath = about.resume.replace(/^\//, '');
-        
-        // Construct the correct file path
         const filePath = path.join(__dirname, '../../', relativePath);
         
-        // Check if file exists
         if (!fs.existsSync(filePath)) {
             console.error('File not found:', filePath);
+            console.error('Absolute file path:', filePath);
+            console.error('Relative path from database:', about.resume);
             return res.status(404).json({ message: 'Resume file not found' });
         }
 
-        // Set headers for file download
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', 'attachment; filename=Resume.pdf');
         
-        // Send the file
-        res.download(filePath, 'Resume.pdf', (err) => {
-            if (err) {
-                console.error('Download error:', err);
-                return res.status(500).json({ message: 'Error downloading file' });
+        // Stream the file instead of using res.download
+        const fileStream = fs.createReadStream(filePath);
+        
+        fileStream.pipe(res);
+        
+        fileStream.on('error', (err) => {
+            console.error('File stream error:', err);
+            if (!res.headersSent) {
+                res.status(500).json({ message: 'Error streaming file' });
             }
         });
+
     } catch (error) {
         console.error('Resume fetch error:', error);
         res.status(500).json({ message: error.message });
