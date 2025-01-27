@@ -29,10 +29,12 @@ import { globalErrorHandler } from './utils/errorHandler.js';
 import cacheMiddleware from './Middleware/catchMiddleware.js'
 
 // Configuration
-
 const app = express();
 const port = process.env.PORT || 3005;
 const databaseurl = process.env.DATABASE_URL;
+
+// Enable trust proxy - Add this before other middleware
+app.set('trust proxy', 1);
 
 // ES Module compatibility
 const __filename = fileURLToPath(import.meta.url);
@@ -52,7 +54,7 @@ app.use(express.json({ limit: '10kb' }));
 app.use(sessionMiddleware);
 app.use(trackPageView);
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }, // Already in your code
+  crossOriginResourcePolicy: { policy: "cross-origin" },
   crossOriginOpenerPolicy: { policy: "unsafe-none" },
   crossOriginEmbedderPolicy: { policy: "unsafe-none" }
 }));
@@ -62,17 +64,22 @@ app.use('/uploads', express.static(path.join(__dirname, './uploads'), {
     res.set('Cache-Control', 'public, max-age=86400'); // 1 day cache
   }
 }));
-// Separate rate limiters for different routes
+
+// Updated rate limiters with proper IP extraction
 const adminLimiter = rateLimit({
   max: 100,
   windowMs: 60 * 60 * 1000, // 1 hour
-  message: 'Too many admin requests from this IP, please try again in an hour!'
+  message: 'Too many admin requests from this IP, please try again in an hour!',
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 const portfolioLimiter = rateLimit({
-  max: 300, // Higher limit for portfolio views
+  max: 300,
   windowMs: 15 * 60 * 1000, // 15 minutes
-  message: 'Too many requests from this IP, please try again in 15 minutes!'
+  message: 'Too many requests from this IP, please try again in 15 minutes!',
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Apply stricter rate limiting only to admin routes
@@ -121,7 +128,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/user', userDataRoutes);
 app.use('/api/upload', UpdateData);
-app.use('/api/views',adminViewsRoutes)
+app.use('/api/views', adminViewsRoutes);
 
 // Error handling
 app.use(globalErrorHandler);
