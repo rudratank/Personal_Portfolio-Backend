@@ -4,6 +4,7 @@ import fs from 'fs';
 import { promisify } from 'util';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import sharp from 'sharp'; // Add sharp for image processing
 
 const writeFile = promisify(fs.writeFile);
 
@@ -38,32 +39,39 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
-// Create upload directories if they don't exist
-const createUploadDirs = () => {
-    const dirs = ['./uploads/images', './uploads/resumes'];
-    dirs.forEach(dir => {
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
-    });
-};
-// Save file to disk
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
+// Save file to disk with WebP conversion for images
 const saveFile = async (buffer, originalname, fieldname) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const extension = path.extname(originalname);
-    const filename = `${fieldname}-${uniqueSuffix}${extension}`;
-    const uploadDir = path.join(process.cwd(), 'uploads', fieldname === 'resume' ? 'resumes' : 'images');
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
     
-    await fs.promises.mkdir(uploadDir, { recursive: true });
-    
-    const filepath = path.join(uploadDir, filename);
-    await fs.promises.writeFile(filepath, buffer);
-    
-    return `/uploads/${fieldname === 'resume' ? 'resumes' : 'images'}/${filename}`;
+    if (fieldname === 'image') {
+        // Convert image to WebP with optimization
+        const webpBuffer = await sharp(buffer)
+            .webp({ quality: 80, nearLossless: true }) // Balanced quality and size
+            .toBuffer();
+        
+        const filename = `${fieldname}-${uniqueSuffix}.webp`;
+        const uploadDir = path.join(process.cwd(), 'uploads', 'images');
+        
+        await fs.promises.mkdir(uploadDir, { recursive: true });
+        
+        const filepath = path.join(uploadDir, filename);
+        await fs.promises.writeFile(filepath, webpBuffer);
+        
+        return `/uploads/images/${filename}`;
+    } else if (fieldname === 'resume') {
+        const extension = path.extname(originalname);
+        const filename = `${fieldname}-${uniqueSuffix}${extension}`;
+        const uploadDir = path.join(process.cwd(), 'uploads', 'resumes');
+        
+        await fs.promises.mkdir(uploadDir, { recursive: true });
+        
+        const filepath = path.join(uploadDir, filename);
+        await fs.promises.writeFile(filepath, buffer);
+        
+        return `/uploads/resumes/${filename}`;
+    }
 };
+
 // Remove uploaded file
 export const removeUploadedFile = (filePath) => {
     if (filePath) {
@@ -80,8 +88,6 @@ export const removeUploadedFile = (filePath) => {
 
 // Main upload middleware
 export const uploadMiddleware = (req, res, next) => {
-    createUploadDirs();
-
     const uploadFields = upload.fields([
         { name: 'image', maxCount: 1 },
         { name: 'resume', maxCount: 1 }
@@ -101,9 +107,6 @@ export const uploadMiddleware = (req, res, next) => {
         }
 
         try {
-            // Store old file paths for cleanup after successful update
-            req.oldFiles = {};
-            
             if (req.files) {
                 for (const [fieldName, files] of Object.entries(req.files)) {
                     const file = files[0];
@@ -126,12 +129,10 @@ export const uploadMiddleware = (req, res, next) => {
     });
 };
 
-
 const removeOldFile = async (filePath) => {
     if (!filePath) return;
     
     try {
-        // Convert URL path to filesystem path
         const absolutePath = path.join(process.cwd(), 'uploads', filePath.replace(/^\/uploads\//, ''));
         
         if (fs.existsSync(absolutePath)) {
