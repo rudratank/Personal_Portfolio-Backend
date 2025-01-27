@@ -61,7 +61,10 @@ app.use(helmet({
 
 app.use('/uploads', express.static(path.join(__dirname, './uploads'), {
   setHeaders: (res, path) => {
-    res.set('Cache-Control', 'public, max-age=86400'); // 1 day cache
+    // Set cache control headers
+    res.set('Cache-Control', 'no-cache');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
   }
 }));
 
