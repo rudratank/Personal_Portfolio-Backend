@@ -6,22 +6,20 @@ import jwt from 'jsonwebtoken';
 
 export const verifyToken = async (req, res, next) => {
     try {
-      const token = req.cookies.token;
-      
-      if (!token) {
-        return res.status(401).json({ message: "No token provided" });
-      }
-  
-      // Add this log to see the JWT_KE
-  
-      const decoded = jwt.verify(token, process.env.JWT_KEY);
-      
-      req.admin = { id: decoded.adminId, email: decoded.email };
-      next();
+        const token = req.cookies.token;
+        
+        if (!token) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_KEY);
+        req.admin = { id: decoded.adminId, email: decoded.email };
+        next();
     } catch (error) {
-      return res.status(404).json({ message: "Invalid token" });
+        // Changed from 404 to 401 for invalid token
+        return res.status(401).json({ message: "Invalid token" });
     }
-  };
+};
 
 // Rate limiting middleware
 export const rateLimiter = {
