@@ -132,10 +132,12 @@ export const verifyOTP = async (req, res) => {
       admin.lastSuccessfulLogin = Date.now();
       await admin.save();
   
-     res.cookie('token', token, {
+   res.cookie('token', token, {
   httpOnly: true,
-  secure: true,
-  sameSite: 'None',
+  secure: true, // For HTTPS
+  sameSite: 'None', // For cross-site access
+  path: '/', // Accessible across all paths
+  maxAge: maxAge // Match your token expiration
 });
 
   
